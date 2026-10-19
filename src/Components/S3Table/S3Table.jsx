@@ -55,6 +55,13 @@ class S3Table extends Component {
         }
     }
 
+    componentWillUnmount() {
+        const {refreshInterval} = this.state;
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+    }
+
     componentDidUpdate(prevProps) {
         if (this.props.currentFileKey !== prevProps.currentFileKey) {
            this.setState({
@@ -64,17 +71,17 @@ class S3Table extends Component {
 
         if (this.props.isProcessingInitiated !== prevProps.isProcessingInitiated) {
             if (this.props.isProcessingInitiated) {
-                const interval = window.setInterval(this.fetchData, 30000);
+                const refreshInterval = window.setInterval(this.fetchData, 30000);
                 this.setState({
                     refreshBtnDisabled: true,
-                    interval: interval,
+                    refreshInterval: refreshInterval,
                 })
             } else {
-                const {interval} = this.state;
-                clearInterval(interval);
+                const {refreshInterval} = this.state;
+                clearInterval(refreshInterval);
                 this.setState({
                     refreshBtnDisabled: false,
-                    interval: null,
+                    refreshInterval: null,
                 })
             }
         }
@@ -94,6 +101,13 @@ class S3Table extends Component {
             if (currentFileKey) {
                 fetchStatus({id: currentFileKey});
             }
+            // Re-list the CSV bucket on every poll. Previously the interval only
+            // fetched the DynamoDB status, and the processed-files table was
+            // refreshed only via the status==="Success" prop-change guard. When
+            // that update was missed, the panel stayed empty until the user
+            // manually refreshed the browser (which runs onGetData on mount).
+            // Listing here makes the panel update on its own once the CSV lands.
+            this.onGetData();
         }
     }
 
