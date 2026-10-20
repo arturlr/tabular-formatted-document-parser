@@ -49,7 +49,7 @@ def convert_to_imgs(pdf_path):
         content = f.read()
     logger.info(content[:1500])
     folder_path = '/tmp/'
-    file_names = pdf2image.convert_from_bytes(content, dpi=500, output_folder=folder_path, fmt='JPEG', paths_only=True)
+    file_names = pdf2image.convert_from_bytes(content, dpi=300, output_folder=folder_path, fmt='JPEG', paths_only=True)
     logger.info(f'PDFs are {glob.glob(folder_path+"*.pdf")}')
     logger.info(f'Images are {file_names}')
     return file_names 
